@@ -8,8 +8,6 @@
     <p><a href="https://www.djangoproject.com/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div>-->
 
-
-
 <div class="row">
     <div class="col-md-4">
 
@@ -26,9 +24,7 @@
         <p><a class="btn btn-default" href="http://www.djangobook.com/en/2.0/index.html">Learn more &raquo;</a></p>-->
     </div>
     <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>The Python Package Index is a repository of software for the Python programming language.</p>
-        <p><a class="btn btn-default" href="https://pypi.org/">Learn more &raquo;</a></p>
+
     </div>
     <div class="col-md-4">
         <h2>Microsoft Azure</h2>
@@ -39,20 +35,20 @@
 
 <div id='calendar'></div>
 
-<!-- Modal -->
-<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- View Event Details Modal -->
+<div class="modal fade" id="eventDetailsModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="exampleModalLabel">Event Details</h5>
+        <h5 class="modal-title" id="eventDetailsModalLabel">Book {{ booking }}</h5>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
       <div class="modal-body">
          <p id="title"/>
-  <p id="date"/>
-  <p id="venue"/>
+         <p id="date"/>
+         <p id="venue"/>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -62,69 +58,80 @@
   </div>
 </div>
 
+<!-- Book Event Modal -->
+<div class="modal fade" id="bookEventModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">     
+
+{% include 'app/partial_book_create.html' %}
+
+      </div>
+    </div>
+  </div>
+
 {% endblock %}
 {% block scripts %}
    <script>
-       var allEvents = {
-               weddings: {},
-               vorts: {},
-               barMitzvahs: {},
-               dinners: {}
-           };
+       $("#eventForm").submit(function(e) {
+           var formData = jQuery('#eventForm').serialize();
+           $.ajax({
+                url: '/book/{{booking}}/',
+                data:formData
+                ,
+                type: 'post',
+                dataType: 'json',
+                success: function (data) {
+                    if (data.form_is_valid) {
+                      alert("Book created!");  // <-- This is just a placeholder for now for testing
+                    }
+                    else {
+                      $("#bookEventModal .modal-content").html(data.html_form);
+                    }
+                }
+           }); 
+           e.preventDefault();
+       });
+
+       var allEvents = new Array();
        $(function () {
            // page is now ready, initialize the calendar...
-           allEvents.weddings = [{
-               events: [
-                   {
-                       title: 'Fried Wedding',
-                       start: '2018-04-25T18:30:00',
-                       editable: true,
-                       description: 'how are you?',
-                       eventType: 'wedding',
-                       venue: "Ne'emas Hachaim"
-                   },
-                   {
-                       id: 1,
-                       title: 'Gross Wedding',
-                       start: '2018-04-25T19:45:00',
-                       //color: 'green',
-                       eventType: 'wedding',
-                       venue: 'Ateres Reva'
-                   }],
-               color: 'purple',
-               textcolor: 'white'
-           }];
-           allEvents.dinners = [{
-               events: [
-                   {
-                       title: 'Tashbar Dinner',
-                       start: '2018-04-26'//,
-                       //rendering: 'background'
-                   }],
-               color: 'green',
-               textcolor: 'white'
-           }];
+           {% autoescape off %}
+               allEvents = Object.values({{ events }});
+           {% endautoescape %}
 
 
             $('#calendar').fullCalendar({
-                eventSources: [
-                    allEvents.weddings[0],
-                    allEvents.dinners[0]
-                ],
+                eventSources: allEvents,
             // put your options and callbacks here
                 weekends: false,
-                dayClick: function (calEvent,jsEvent, view) {
-                    alert(calEvent.title);
-                    alert('a day has beeen clicked');
-                   
+                dayClick: function (date,calEvent,jsEvent, view) {
+                    //when a date is clicked pop open the new event 
+                    //create form
+                    //$("#id_start").val(date.format());
+                    $("#bookEventModal").modal();
+       
+
+                    ////$.ajax({
+                    ////    url: '/book/wedding/',
+                    ////    type: 'get',
+                    ////    dataType: 'json',
+                    ////    beforeSend: function () {
+                    ////        $("#bookEventModal").modal("show");
+                    ////     },
+                    ////     success: function (data) {
+                    ////         $("#bookEventModal").html(data.html_form);
+                    ////      }
+                    ////});
+
+
+
                 },
                 //wnen an event is clicked
                 eventClick: function (calEvent, jsEvent, view) {
                     $("#title").text(calEvent.title);
-                   
                     $("#date").text(moment(calEvent.start).format("dddd, MMMM Do YYYY - h:mm a"));
                     $("#venue").text(calEvent.venue);
-                    $("#exampleModal").modal();
+                    $("#eventDetailsModal").modal();
                     //alert('Event: ' + calEvent.title + calEvent.eventType);
                     //alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
                     //alert('View: ' + view.name);
@@ -136,25 +143,16 @@
             })
        });
 
-       //var eventData = $('#calendar').fullCalendar('clickEvents', [1]);
-       //alert(eventData.title);
-       $('#weddingView').click(function () {
+       //this will hide/show events based on the choices in the venue list,mn 
+       $(document).on('click', '.form-check-input', function (e) {
+           var index = $(this).attr('id').substr(-1);
            if ($(this).prop('checked')) {
-               $('#calendar').fullCalendar('addEventSource', allEvents.weddings[0]);
+               $('#calendar').fullCalendar('addEventSource', allEvents[index]);
 
            } else {
-               $('#calendar').fullCalendar('removeEventSource', allEvents.weddings[0]);
-           }
+               $('#calendar').fullCalendar('removeEventSource', allEvents[index]);
+           }     
        });
-       $('#dinnerView').click(function () {
-           if ($(this).prop('checked')) {
-               $('#calendar').fullCalendar('addEventSource', allEvents.dinners[0]);
-
-           } else {
-               $('#calendar').fullCalendar('removeEventSource', allEvents.dinners[0]);
-           }
-       });
-       
 
     </script>
 {% endblock %}

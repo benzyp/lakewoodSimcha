@@ -72,57 +72,20 @@
 {% endblock %}
 {% block scripts %}
    <script>
-       var allEvents = {
-               weddings: {},
-               vorts: {},
-               barMitzvahs: {},
-               dinners: {}
-           };
+       var allEvents = new Array();
        $(function () {
            // page is now ready, initialize the calendar...
-           allEvents.weddings = [{
-               events: [
-                   {
-                       title: 'Fried Wedding',
-                       start: '2018-04-25T18:30:00',
-                       editable: true,
-                       description: 'how are you?',
-                       eventType: 'wedding',
-                       venue: "Ne'emas Hachaim"
-                   },
-                   {
-                       id: 1,
-                       title: 'Gross Wedding',
-                       start: '2018-04-25T19:45:00',
-                       //color: 'green',
-                       eventType: 'wedding',
-                       venue: 'Ateres Reva'
-                   }],
-               color: 'purple',
-               textcolor: 'white'
-           }];
-           allEvents.dinners = [{
-               events: [
-                   {
-                       title: 'Tashbar Dinner',
-                       start: '2018-04-26'//,
-                       //rendering: 'background'
-                   }],
-               color: 'green',
-               textcolor: 'white'
-           }];
-
-
+       {% autoescape off %}
+           allEvents = Object.values({{ events }});
+       {% endautoescape %}
+       //alert(allEvents[0]);
            $('#calendar').fullCalendar({
                 header: {
         left: 'prev,next today',
         center: 'title',
         right: 'month,basicWeek,basicDay'
       },
-                eventSources: [
-                    allEvents.weddings[0],
-                    allEvents.dinners[0]
-                ],
+                eventSources: allEvents,
             // put your options and callbacks here
                 weekends: false,
                 dayClick: function (calEvent,jsEvent, view) {
@@ -148,25 +111,9 @@
             })
        });
 
-       //var eventData = $('#calendar').fullCalendar('clickEvents', [1]);
-       //alert(eventData.title);
-       $('#weddingView').click(function () {
-           if ($(this).prop('checked')) {
-               $('#calendar').fullCalendar('addEventSource', allEvents.weddings[0]);
-
-           } else {
-               $('#calendar').fullCalendar('removeEventSource', allEvents.weddings[0]);
-           }
+       $(document).on('click', '.form-check-input', function(){
+        alert('test'); 
        });
-       $('#dinnerView').click(function () {
-           if ($(this).prop('checked')) {
-               $('#calendar').fullCalendar('addEventSource', allEvents.dinners[0]);
-
-           } else {
-               $('#calendar').fullCalendar('removeEventSource', allEvents.dinners[0]);
-           }
-       });
-       
 
     </script>
 {% endblock %}

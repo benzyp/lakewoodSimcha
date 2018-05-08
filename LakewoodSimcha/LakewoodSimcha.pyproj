@@ -31,6 +31,9 @@
     <EnableUnmanagedDebugging>false</EnableUnmanagedDebugging>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="app\admin.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="app\forms.py" />
     <Compile Include="app\models.py" />
     <Compile Include="app\tests.py" />
@@ -68,6 +71,7 @@
     <Content Include="app\static\app\scripts\fullcalendar\moment.min.js" />
     <Content Include="app\templates\app\book.html" />
     <Content Include="app\templates\app\choicespartial.html" />
+    <Content Include="app\templates\app\partial_book_create.html" />
     <Content Include="requirements.txt" />
     <Content Include="db.sqlite3" />
     <Content Include="app\static\app\content\bootstrap.css" />

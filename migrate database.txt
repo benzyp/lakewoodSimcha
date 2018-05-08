@@ -1,0 +1,2 @@
+C:\Users\Benzy\source\repos\LakewoodSimcha\LakewoodSimcha>C:\Users\Benzy\source\repos\LakewoodSimcha\LakewoodSimcha\env\Scripts\python manage.py makemigrations
+C:\Users\Benzy\source\repos\LakewoodSimcha\LakewoodSimcha>C:\Users\Benzy\source\repos\LakewoodSimcha\LakewoodSimcha\env\Scripts\python manage.py migrate

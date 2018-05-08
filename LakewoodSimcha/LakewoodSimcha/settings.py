@@ -34,12 +34,14 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'app',
     # Add your apps here to enable them
+    'widget_tweaks',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+
 ]
 
 MIDDLEWARE_CLASSES = [
@@ -81,6 +83,12 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        #'ENGINE': 'django.db.backends.mysql',
+        #'NAME': 'lakewood_simcha',
+        #'USER': 'benzyp',
+        #'HOST': 'bpernikoff.croixvpq6ttu.us-east-1.rds.amazonaws.com',
+        #'PORT': '3306',
+        #'PASSWORD': 'bp2212bp'
     }
 }
 
@@ -124,3 +132,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 
 STATIC_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
+
+#EMAIL SETTINGS
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_HOST_USER = 'bzpern@gmail.com'
+EMAIL_HOST_PASSWORD = 'bp2212bp'
+EMAIL_USE_TLS = True
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
