@@ -6,7 +6,7 @@ from django.shortcuts import render
 from django.http import HttpRequest
 from django.template import RequestContext
 from datetime import datetime
-from app.models import Event, Venue
+from app.models import Event, Customer, Venue
 from app.forms import EventForm, CustomerForm
 from django.core.serializers import serialize
 from array import array
@@ -14,19 +14,24 @@ import json
 from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.core.mail import send_mail
+from django.db.models import F
 
 def home(request):
     """Renders the home page."""
     #assert isinstance(request, HttpRequest)
-    #eventTypes = EventType.objects.all()
     allEvents = []
+    eventChoices = []
+    eventColors = ('indigo', 'green', 'lightSkyBlue', 'plum')
     for eventType in Event.EVENT_TYPES:
         #get all events for each event type
-        packages = Event.objects.filter(event_type = eventType[0]).all().values('id','title','start','color')
+        packages = Event.objects.filter(event_type = eventType[0]).filter(confirmed = True).all().values('id','title','start')
         
         if packages.exists():
+            eventChoices.append(eventType[1])
             eventGroup = []
             for package in packages:
+                package['color'] = [eventColors[eventType[0]-1]]
+                #attributes can be added to the event - package['borderColor'] = 'red'
                 eventGroup.append(package)
             json_obj = dict(events = eventGroup)
             allEvents.append(json_obj)
@@ -37,7 +42,8 @@ def home(request):
         {
             'title':'Home Page',
             'year':datetime.now().year,
-            'events':json.dumps(allEvents,default=str)
+            'events':json.dumps(allEvents,default=str),
+            'extra_context': {'venues':eventChoices }
             #,'events':serialize('json',event_list,fields=('id','title','startTime','color'))
         }
     )
@@ -70,11 +76,12 @@ def book(request, booking):
     allVenues = []
     for venueType in Venue.VENUE_TYPES:
         #get all events for each venue type
-        packages = Event.objects.filter(venue = venueType[0]).filter(venue__venue_type = Venue.VENUE_TYPE_MAP[booking]).all().values('id','title','start','color','venue__name','venue__venue_type')
-        
+        #annotate will rename 'venue__color' to 'color
+        packages = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed')).filter(venue = venueType[0]).filter(venue__venue_type = Venue.VENUE_TYPE_MAP[booking]).all().values('id','title','start','venue__name','venue__venue_type','color','editable')
         if packages.exists():
             eventGroup = []
             for package in packages:
+                package['editable'] = not package['editable']#flip the value
                 eventGroup.append(package)
                 #store list of all distinct venues for choicespartial
                 if package['venue__name'] not in allVenues:
@@ -117,7 +124,7 @@ def create_event(request):
             event = form.save(commit = False)
             event.customer = customer
             event.save()
-
+            contact_venue(event, customer)
             data['form_is_valid'] = True
         else:
             data['form_is_valid'] = False
@@ -151,6 +158,30 @@ def contact_venue(event, customer):
         fail_silently=False,
     )
 
+def contact_venue_with_edit(event, customer):
+    """send an email to the venue"""
+    d = dict(Event.EVENT_TYPES)
+    send_mail(
+        'Event date has been changed',
+        customer.name + ' has change the ' + event.title + ' event to a new date. ' + event.start,
+        'bzpern@gmail',
+        ['benzyp@yahoo.com'],
+        fail_silently=False,
+    )
+
+def verify_phone(request):
+    event_id = request.POST.get('edit_event_id')
+    phone = request.POST.get('phone')
+    event_edit_start = request.POST.get('edit_event_start')
+    event = Event.objects.get(id=event_id)
+    valid = False
+    if phone == event.customer.phone: 
+        event.start = event_edit_start
+        event.save()
+        contact_venue_with_edit(event, event.customer)
+        valid = True
+    return JsonResponse(valid, safe=False)
+    
 def contact(request):
     """Renders the contact page."""
     assert isinstance(request, HttpRequest)

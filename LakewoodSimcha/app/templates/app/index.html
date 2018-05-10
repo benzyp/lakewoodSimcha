@@ -12,16 +12,7 @@
     <div class="col-md-4">
         <h4>View Event Type</h4>
         <p>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="" id="weddingView" checked>
-                <label class="form-check-label" for="weddingView">View Weddings</label><br />
-                <input class="form-check-input" type="checkbox" value="" id="dinnerView" checked>
-                <label class="form-check-label" for="dinnerView">View Dinners</label><br />
-                <input class="form-check-input" type="checkbox" value="" id="bmView" checked>
-                <label class="form-check-label" for="bmView">View Bar Mitzvahs</label><br />
-                <input class="form-check-input" type="checkbox" value="" id="vortView" checked>
-                <label class="form-check-label" for="vortView">View Vorts</label>
-            </div>
+             {% include 'app/choicespartial.html' %}
         </p>
         <!--<h2>Getting started</h2>
         <p>
@@ -33,14 +24,10 @@
         <p><a class="btn btn-default" href="http://www.djangobook.com/en/2.0/index.html">Learn more &raquo;</a></p>-->
     </div>
     <div class="col-md-4">
-        <h2>Get more libraries</h2>
-        <p>The Python Package Index is a repository of software for the Python programming language.</p>
-        <p><a class="btn btn-default" href="https://pypi.org/">Learn more &raquo;</a></p>
+        <p></p><p></p>
     </div>
     <div class="col-md-4">
-        <h2>Microsoft Azure</h2>
-        <p>You can easily publish to Microsoft Azure using Visual Studio. Find out how you can host your application using a free trial today.</p>
-        <p><a class="btn btn-default" href="http://azure.microsoft.com">Learn more &raquo;</a></p>
+        <p></p><p></p>
     </div>
 </div>
 
@@ -80,18 +67,25 @@
        {% endautoescape %}
        //alert(allEvents[0]);
            $('#calendar').fullCalendar({
+                customButtons: {
+                    toggleWeekends: {
+                        text: 'Show Weekends',
+                        click: function() {
+                            toggleWeekends();
+                        },
+                    },
+                },
                 header: {
-        left: 'prev,next today',
-        center: 'title',
-        right: 'month,basicWeek,basicDay'
-      },
+                    left: 'prev,next today toggleWeekends',
+                    center: 'title',
+                    right: 'month,basicWeek,basicDay'
+                },
                 eventSources: allEvents,
             // put your options and callbacks here
                 weekends: false,
                 dayClick: function (calEvent,jsEvent, view) {
-                    alert(calEvent.title);
-                    alert('a day has beeen clicked');
-                   
+                    //alert(calEvent.title);
+                    //alert('a day has beeen clicked');                   
                 },
                 //wnen an event is clicked
                 eventClick: function (calEvent, jsEvent, view) {
@@ -111,9 +105,36 @@
             })
        });
 
-       $(document).on('click', '.form-check-input', function(){
-        alert('test'); 
+       //this will hide/show events based on the choices in the event list,mn 
+       $(document).on('click', '.form-check-input', function (e) {
+           var index = $(this).attr('id').substr(-1);
+           if ($(this).prop('checked')) {
+               $('#calendar').fullCalendar('addEventSource', allEvents[index]);
+
+           } else {
+               $('#calendar').fullCalendar('removeEventSource', allEvents[index]);
+           }     
        });
 
+       function toggleWeekends() {
+           var weekends = $('#calendar').fullCalendar('option', 'weekends');
+            var text = 'Show Weekends';
+
+            if (weekends == false) {
+                text = 'Hide Weekends';
+              }
+
+            $('#calendar').fullCalendar('option', {
+                customButtons: {
+                    toggleWeekends: {
+                        text: text,
+                        click: function() {
+                            toggleWeekends();
+                        },
+                    },
+                },
+                weekends: !weekends,
+            });
+        }
     </script>
 {% endblock %}

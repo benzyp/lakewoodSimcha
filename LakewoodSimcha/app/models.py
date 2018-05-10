@@ -25,9 +25,10 @@ class Venue(models.Model):
     price = models.DecimalField(max_digits=7, decimal_places=2,null=True)
     latitude = models.DecimalField(max_digits=9, decimal_places=7)
     longitude = models.DecimalField(max_digits=9, decimal_places=7)
+    color = models.CharField(max_length=25, blank=True)
 
     def __str__(self):
-        return 'Name: ' + self.name
+        return self.name
 
 class Customer(models.Model):
     name = models.CharField(max_length=100)
@@ -53,7 +54,6 @@ class Event(models.Model):
     confirmed = models.BooleanField(default=False)
     start = models.DateTimeField()
     end = models.DateTimeField(blank=True, null=True)
-    color = models.CharField(max_length=25, blank=True)
 
 class Vendor(models.Model):
     CATERING = 1

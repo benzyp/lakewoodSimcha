@@ -10,7 +10,7 @@
 
 <div class="row">
     <div class="col-md-4">
-
+        <h5>Display {{ extra_context.display }}</h5>
  {% include 'app/choicespartial.html' %}
 
       
@@ -24,12 +24,10 @@
         <p><a class="btn btn-default" href="http://www.djangobook.com/en/2.0/index.html">Learn more &raquo;</a></p>-->
     </div>
     <div class="col-md-4">
-
+        <p></p><p></p>
     </div>
     <div class="col-md-4">
-        <h2>Microsoft Azure</h2>
-        <p>You can easily publish to Microsoft Azure using Visual Studio. Find out how you can host your application using a free trial today.</p>
-        <p><a class="btn btn-default" href="http://azure.microsoft.com">Learn more &raquo;</a></p>
+        <p></p><p></p>
     </div>
 </div>
 
@@ -59,30 +57,65 @@
 </div>
 
 <!-- Book Event Modal -->
-<div class="modal fade" id="bookEventModal" tabindex="-1" role="dialog" aria-labelledby="eventDetailsLabel" aria-hidden="true">
+<div class="modal fade" id="bookEventModal" tabindex="-1" role="dialog" aria-labelledby="bookEventLabel" aria-hidden="true">
   <div class="modal-dialog" role="document">
     <div class="modal-content">     
-
-{% include 'app/partial_book_create.html' %}
-
+        {% include 'app/partial_book_create.html' %}
       </div>
     </div>
   </div>
 
+<!-- Confirm Edit Modal -->
+<div class="modal fade" id="confirmEditModal" tabindex="-1" role="dialog" aria-labelledby="confirmEditLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">          
+        <form method="post" id="verifyPhoneForm">      
+        <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        <h4 class="modal-title">Verify Phone</h4>
+        <h5>Please verify your phone number to edit the date.</h5>
+      </div>
+      <div class="modal-body">
+            {% csrf_token %}
+          <div class="-group">
+               <label name="confirmEditMessage" id="confirmEditMessage" class=""></label>
+          </div>
+          <div class="-group">
+            <label for="id_phone">Phone</label>
+            <input type="text" name="phone" maxlength="10" class="form-control" required id="id_phone" />
+          </div>
+          <div class="-group">
+            <label for="edit_event_start">Date</label>
+            <input type="text" name="edit_event_start" maxlength="19" class="form-control" required id="edit_event_start" />
+          </div>
+            <input type="hidden" name="edit_event_id" id="edit_event_id" value=""/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="submit" class="btn btn-primary">Verify Phone</button>
+      </div>
+      </form>
+    </div>
+</div>
+</div>
+
 {% endblock %}
 {% block scripts %}
    <script>
+       //create event submit
+       var canEditPhone = "";
        $("#eventForm").submit(function(e) {
            var formData = jQuery('#eventForm').serialize();
            $.ajax({
                 url: '/book/{{booking}}/',
-                data:formData
-                ,
+                data:formData,
                 type: 'post',
                 dataType: 'json',
                 success: function (data) {
                     if (data.form_is_valid) {
-                      alert("Book created!");  // <-- This is just a placeholder for now for testing
+                      alert("Booking created!");  // <-- This is just a placeholder for now for testing
                     }
                     else {
                       $("#bookEventModal .modal-content").html(data.html_form);
@@ -92,39 +125,71 @@
            e.preventDefault();
        });
 
-       var allEvents = new Array();
-       $(function () {
-           // page is now ready, initialize the calendar...
-           {% autoescape off %}
-               allEvents = Object.values({{ events }});
-           {% endautoescape %}
+       //event edit submit
+       $("#verifyPhoneForm").submit(function(e) {
+           var formData = jQuery('#verifyPhoneForm').serialize();
+           $.ajax({
+               url: '/verify/phone',
+               data: formData,
+               type: 'post',
+               dataType: 'json',
+////           beforeSend: function () {
+////               $("#bookEventModal").modal("show");
+////           },
+               success: function (data) {
+                   if(data){
+                       $("#confirmEditMessage").text("Your change of date has been saved and the vendor has been notified.");
+                   }else{
+                       $("#confirmEditMessage").addClass('redFont');
+                       $(".redFont").css('color','red');
+                       $("#confirmEditMessage").text("You can not change somone else's booking. The changes will not be saved.");
+                   }
+               }
+           });
+                      e.preventDefault();
+       });
 
-
+        var allEvents = new Array();
+        $(function () {
+            // page is now ready, initialize the calendar...
+            {% autoescape off %}
+                allEvents = Object.values({{ events }});
+            {% endautoescape %}
             $('#calendar').fullCalendar({
+                //  put your options and callbacks here
+                customButtons: {
+                    toggleWeekends: {
+                        text: 'Show Weekends',
+                        click: function() {
+                            toggleWeekends();
+                        },
+                    },
+                },
+                header: {
+                    left: 'prev,next today toggleWeekends',
+                    center: 'title',
+                    right: 'month,basicWeek,basicDay'
+                },
+                forceEventDuration: true,
                 eventSources: allEvents,
-            // put your options and callbacks here
                 weekends: false,
                 dayClick: function (date,calEvent,jsEvent, view) {
-                    //when a date is clicked pop open the new event 
-                    //create form
+                    //when a date is clicked pop open the new event create form
                     //$("#id_start").val(date.format());
                     $("#bookEventModal").modal();
-       
-
-                    ////$.ajax({
-                    ////    url: '/book/wedding/',
-                    ////    type: 'get',
-                    ////    dataType: 'json',
-                    ////    beforeSend: function () {
-                    ////        $("#bookEventModal").modal("show");
-                    ////     },
-                    ////     success: function (data) {
-                    ////         $("#bookEventModal").html(data.html_form);
-                    ////      }
-                    ////});
-
-
-
+                },
+                eventDragStart: function( event, jsEvent, ui, view ) { 
+                    event.end = event.start;
+                },  
+                eventDrop: function( event, delta, revertFunc, jsEvent, ui, view ) { 
+                    if(canEditPhone == ""){
+                        //clean out the formatting and set the values of the form from the event
+                        $("#confirmEditMessage").text("");
+                         $(".redFont").css('color','black');;
+                        $("#edit_event_id").attr('value', event.id);
+                        $("#edit_event_start").attr('value',moment(event.end).format('YYYY-MM-DD HH:MM:ss'));
+                        $("#confirmEditModal").modal();
+                    }
                 },
                 //wnen an event is clicked
                 eventClick: function (calEvent, jsEvent, view) {
@@ -135,10 +200,8 @@
                     //alert('Event: ' + calEvent.title + calEvent.eventType);
                     //alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
                     //alert('View: ' + view.name);
-
                     // change the border color just for fun
                     //$(this).css('border-color', 'red');
-
                   }
             })
        });
@@ -154,5 +217,26 @@
            }     
        });
 
+
+       function toggleWeekends() {
+           var weekends = $('#calendar').fullCalendar('option', 'weekends');
+            var text = 'Show Weekends';
+
+            if (weekends == false) {
+                text = 'Hide Weekends';
+              }
+
+            $('#calendar').fullCalendar('option', {
+                customButtons: {
+                    toggleWeekends: {
+                        text: text,
+                        click: function() {
+                            toggleWeekends();
+                        },
+                    },
+                },
+                weekends: !weekends,
+            });
+        }
     </script>
 {% endblock %}
