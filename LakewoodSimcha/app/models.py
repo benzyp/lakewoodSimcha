@@ -48,7 +48,7 @@ class Event(models.Model):
     )
     title = models.CharField(max_length=100)
     event_type = models.PositiveSmallIntegerField(choices = EVENT_TYPES)
-    customer = models.ForeignKey(Customer, blank=True, null=True)
+    customer = models.ForeignKey(Customer, on_delete=models.CASCADE, blank=True, null=True)
     venue = models.ForeignKey(Venue,blank=True,null=True)
     description = models.CharField(max_length=250, blank=True)
     confirmed = models.BooleanField(default=False)

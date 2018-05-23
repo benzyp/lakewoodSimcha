@@ -7,6 +7,7 @@ from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import ugettext_lazy as _
 from django.forms import Form
 from app.models import Event,Venue,Customer
+from datetimewidget.widgets import DateTimeWidget
 
 class BootstrapAuthenticationForm(AuthenticationForm):
     """Authentication form which uses boostrap CSS."""
@@ -20,14 +21,12 @@ class BootstrapAuthenticationForm(AuthenticationForm):
                                    'placeholder':'Password'}))
 
 class EventForm(forms.ModelForm):
-    #event_type = forms.IntegerField(widget=forms.Select(choices=Event.EVENT_TYPES))
-    #title = forms.CharField(max_length=100)
-    #venue = forms.ModelChoiceField(queryset=Venue.objects.filter(venue_type=2))
-    #description = forms.CharField(max_length=250)
     class Meta:
         model = Event
-        fields = ('event_type', 'title', 'venue', 'description', 'start')
-        #widgets = {'start': forms.DateTimeInput(attrs={'class': 'datetime-input'})}
+        fields = ('start','event_type', 'title', 'venue', 'description')
+        widgets = {#Use localization and bootstrap 3
+            'start': DateTimeWidget(attrs={'id':"start"}, usel10n = True, bootstrap_version=3)            
+        }
 
     def __init__(self, venue, *args, **kwargs):
         super(EventForm, self).__init__(*args, **kwargs)
@@ -39,5 +38,10 @@ class CustomerForm(forms.ModelForm):
         model = Customer
         exclude = ()
 
-
+class AdminEventForm(forms.ModelForm):
+    class Meta:
+        model = Event
+        fields = ('start','confirmed','venue')
+        widgets = {'venue': forms.HiddenInput(),'start':DateTimeWidget(attrs={'id':"start"},usel10n = True, bootstrap_version=3)}
+        labels = {'venue':_('')}
 

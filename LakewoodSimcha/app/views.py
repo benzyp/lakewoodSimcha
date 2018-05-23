@@ -2,7 +2,7 @@
 Definition of views.
 """
 
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpRequest
 from django.template import RequestContext
 from datetime import datetime
@@ -24,7 +24,7 @@ def home(request):
     eventColors = ('indigo', 'green', 'lightSkyBlue', 'plum')
     for eventType in Event.EVENT_TYPES:
         #get all events for each event type
-        packages = Event.objects.filter(event_type = eventType[0]).filter(confirmed = True).all().values('id','title','start')
+        packages = Event.objects.filter(event_type = eventType[0]).filter(confirmed = True).all().values('id','title','start','description','venue__name')
         
         if packages.exists():
             eventChoices.append(eventType[1])
@@ -74,18 +74,23 @@ def book(request, booking):
 
     allEvents = []
     allVenues = []
-    for venueType in Venue.VENUE_TYPES:
+    venues = Venue.objects.filter(venue_type =  Venue.VENUE_TYPE_MAP[booking])
+    for currentVenue in venues:
         #get all events for each venue type
         #annotate will rename 'venue__color' to 'color
-        packages = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed')).filter(venue = venueType[0]).filter(venue__venue_type = Venue.VENUE_TYPE_MAP[booking]).all().values('id','title','start','venue__name','venue__venue_type','color','editable')
+        packages = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed'),type=F('event_type')).filter(venue = currentVenue.id).all().values('id','title','start','venue__name','venue__venue_type','type','color','editable')
         if packages.exists():
             eventGroup = []
             for package in packages:
                 package['editable'] = not package['editable']#flip the value
+                package['type'] = Event.EVENT_TYPES[package['type']-1][1]#event type for details
+                if package['editable'] == True:
+                    package['borderColor'] = "red"
+                    package['title'] = "Tentative"
                 eventGroup.append(package)
                 #store list of all distinct venues for choicespartial
-                if package['venue__name'] not in allVenues:
-                    allVenues.append(package['venue__name'])
+                if (currentVenue.id,package['venue__name']) not in allVenues:
+                    allVenues.append((currentVenue.id,package['venue__name']))
             json_obj = dict(events = eventGroup)
             allEvents.append(json_obj)
 
@@ -153,8 +158,8 @@ def contact_venue(event, customer):
     send_mail(
         'A new booking at ' + event.venue.name,
         customer.name + ' has booked a ' + d[event.event_type] + ' at ' + event.venue.name + ' on ' + event.start.strftime("%A, %d. %B %Y %I:%M%p"),
-        'bzpern@gmail',
-        ['benzyp@yahoo.com'],
+        'benzyp@yahoo.com',
+        [customer.email],
         fail_silently=False,
     )
 
@@ -164,8 +169,8 @@ def contact_venue_with_edit(event, customer):
     send_mail(
         'Event date has been changed',
         customer.name + ' has change the ' + event.title + ' event to a new date. ' + event.start,
-        'bzpern@gmail',
-        ['benzyp@yahoo.com'],
+        'benzyp@yahoo.com',
+        [customer.email],
         fail_silently=False,
     )
 
@@ -191,6 +196,44 @@ def contact(request):
         {
             'title':'Contact',
             'message':'Your contact page.',
+            'year':datetime.now().year,
+        }
+    )
+
+def venue_page(request, pk):
+    venue = get_object_or_404(Venue, pk=pk)
+    events = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed'),type=F('event_type')).filter(venue = pk).all().values('id','title','start','venue__name','venue__venue_type','type','color','editable')
+    if events.exists():
+        eventGroup = []
+        for event in events:
+            event['editable'] = not event['editable']#flip the value
+            event['type'] = Event.EVENT_TYPES[event['type']-1][1]
+            if event['editable'] == True:
+                event['borderColor'] = "red"
+                event['title'] = "Tentative"
+            eventGroup.append(event)
+        json_obj = dict(events = eventGroup)
+
+    return render(
+    request,
+    'app/venue.html',
+    {
+        'events':json.dumps(json_obj,default=str),
+        'venue':venue,
+        'title':venue.name,
+        'year':datetime.now().year,
+    }
+)
+
+def help(request):
+    """Renders the contact page."""
+    assert isinstance(request, HttpRequest)
+    return render(
+        request,
+        'app/help.html',
+        {
+            'title':'Help',
+            'message':'Help page.',
             'year':datetime.now().year,
         }
     )

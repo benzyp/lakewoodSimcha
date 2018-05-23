@@ -1,0 +1,27 @@
+﻿{% for event in events %}
+  <tr>
+    <td>{{ event.id }}</td>
+    <td>{{ event.title }}</td>
+    <td>{{ event.customer.name }}</td>
+    <td>{{ event.start }}</td>
+    <td>{{ event.confirmed }}</td>
+    <td>{{ event.customer.phone }}</td>
+    <td>{{ event.customer.email }}</td>
+    <td>
+      <button type="button"
+              class="btn btn-warning btn-sm js-update-event"
+              data-url="{% url 'event_update' event.id %}">
+        <span class="glyphicon glyphicon-pencil"></span> Edit
+      </button>
+      <button type="button"
+              class="btn btn-danger btn-sm js-delete-event"
+              data-url="{% url 'event_delete' event.id %}">
+        <span class="glyphicon glyphicon-trash"></span> Delete
+      </button>
+    </td>
+  </tr>
+{% empty %}
+  <tr>
+    <td colspan="8" class="text-center bg-warning">No event</td>
+  </tr>
+{% endfor %}

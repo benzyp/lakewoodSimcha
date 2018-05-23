@@ -45,8 +45,9 @@
       </div>
       <div class="modal-body">
          <p id="title"/>
-  <p id="date"/>
-  <p id="venue"/>
+         <p id="description"/>
+         <p id="venue"/>
+         <p id="date"/>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
@@ -90,9 +91,10 @@
                 //wnen an event is clicked
                 eventClick: function (calEvent, jsEvent, view) {
                     $("#title").text(calEvent.title);
-                   
+                    $("#description").text(calEvent.description);
+                    $("#venue").text(calEvent.venue__name);
                     $("#date").text(moment(calEvent.start).format("dddd, MMMM Do YYYY - h:mm a"));
-                    $("#venue").text(calEvent.venue);
+                    $("#venue").text(calEvent.venue);                   
                     $("#exampleModal").modal();
                     //alert('Event: ' + calEvent.title + calEvent.eventType);
                     //alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);

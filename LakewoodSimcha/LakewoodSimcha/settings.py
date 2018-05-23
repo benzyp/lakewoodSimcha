@@ -34,6 +34,7 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'app',
     # Add your apps here to enable them
+    'datetimewidget',
     'widget_tweaks',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -53,6 +54,7 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.locale.LocaleMiddleware'
 ]
 
 ROOT_URLCONF = 'LakewoodSimcha.urls'
@@ -81,14 +83,14 @@ WSGI_APPLICATION = 'LakewoodSimcha.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
-        #'ENGINE': 'django.db.backends.mysql',
-        #'NAME': 'lakewood_simcha',
-        #'USER': 'benzyp',
-        #'HOST': 'bpernikoff.croixvpq6ttu.us-east-1.rds.amazonaws.com',
-        #'PORT': '3306',
-        #'PASSWORD': 'bp2212bp'
+        #'ENGINE': 'django.db.backends.sqlite3',
+        #'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'lakewood_simcha',
+        'USER': 'benzyp',
+        'HOST': 'bpernikoff.croixvpq6ttu.us-east-1.rds.amazonaws.com',
+        'PORT': '3306',
+        'PASSWORD': 'bp2212bp'
     }
 }
 

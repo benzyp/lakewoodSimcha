@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ title }} - Lakewood Simcha</title>
     {% load staticfiles %}
+    
+    <script src="{% static 'app/scripts/jquery-1.10.2.js' %}"></script>
+
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/bootstrap.min.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/site.css' %}" />
     <link rel="stylesheet" type="text/css" href="{% static 'app/content/fullcalendar.css' %}" />
@@ -39,7 +42,7 @@
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
-                <a href="/" class="navbar-brand">Application name</a>
+                <a href="/" class="navbar-brand">Lakewood Simcha</a>
             </div>
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
@@ -48,12 +51,12 @@
                         <a class="dropdown-toggle" data-toggle="dropdown" href="#">Book
                         <span class="caret"></span></a>
                         <ul class="dropdown-menu">
-                            <li><a href="{% url 'book' 'wedding' %}">Wedding</a></li>
+                            <li><a href="{% url 'book' 'wedding' %}">Wedding Hall</a></li>
                             <li><a href="{% url 'book' 'hall' %}">Hall</a></li>
                             <li><a href="{% url 'book' 'restaurant' %}">Restaurant</a></li>
                         </ul>
                     </li>
-                    <li class="dropdown {% if title == "Vendor" %} active {% endif %}">
+                    <!--<li class="dropdown {% if title == "Vendor" %} active {% endif %}">
                         <a class="dropdown-toggle" data-toggle="dropdown" href="{% url 'about' %}">Vendor
                         <span class="caret"></span></a>
                         <ul class="dropdown-menu">
@@ -61,7 +64,8 @@
                             <li><a href="#">Makeup</a></li>
                             <li><a href="#">Music</a></li>
                         </ul>
-                    </li>
+                    </li>-->
+                    <li class="nav-item {% if title == "Help" %} active {% endif %}"><a href="{% url 'help' %}">Help</a></li>
                     <li class="nav-item {% if title == "Contact" %} active {% endif %}"><a href="{% url 'contact' %}">Contact</a></li>
                 </ul>
                 {% include 'app/loginpartial.html' %}
@@ -76,8 +80,6 @@
             <p>&copy; {{ year }} - Lakewood Simcha</p>
         </footer>
     </div>
-
-    <script src="{% static 'app/scripts/jquery-1.10.2.js' %}"></script>
     <script src="{% static 'app/scripts/bootstrap.js' %}"></script>
     <script src="{% static 'app/scripts/respond.js' %}"></script>
     <script src="{% static 'app/scripts/fullcalendar/moment.min.js' %}"></script>

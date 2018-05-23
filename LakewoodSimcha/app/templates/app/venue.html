@@ -1,0 +1,113 @@
+﻿{% extends "app/layout.html" %}
+{% load static %}
+
+{% block content %}
+<style>
+#calendar{
+  display:block;
+}
+</style>
+
+<img src="{% static 'app/images/' %}{{ venue.id }}.jpg" width="100%" height="100"/>
+<p>
+    <h2>{{ venue.name }}</h2>
+</p>
+<p>
+    Lorem ipsum dolor sit amet, et quo quot voluptaria efficiantur. Ut dolores molestiae has. Ex vis vocibus intellegat voluptaria, erat aperiri vocibus no vis. Mea labore iisque ancillae in, pri ea iracundia pertinacia.
+</p>
+<p>
+    <h3>Calendar&nbsp;&nbsp;<i class="glyphicon glyphicon-collapse-up" id="toggle"></i></h3>
+</p>
+<p>
+    <div id='calendar'></div>
+</p>
+<p><h3>Pricing</h3></p>
+<p>
+    <h3>Catering</h3>
+</p>
+<p>
+
+</p>
+<p>
+    <h3>Parking</h3>
+</p>
+<p>
+
+</p>
+
+{% endblock %}
+{% block scripts %}
+   <script>
+$("#toggle").on("click", function(){
+  $("#calendar").fadeToggle();    
+  $("#toggle").toggleClass("glyphicon-collapse-up glyphicon-collapse-down");  
+
+});
+       var allEvents = new Array();
+       $(function () {
+           // page is now ready, initialize the calendar...
+       {% autoescape off %}
+           allEvents = Object.values({{ events }});
+       {% endautoescape %}
+       //alert(allEvents[0]);
+           $('#calendar').fullCalendar({
+                customButtons: {
+                    toggleWeekends: {
+                        text: 'Show Weekends',
+                        click: function() {
+                            toggleWeekends();
+                        },
+                    },
+                },
+                header: {
+                    left: 'prev,next today toggleWeekends',
+                    center: 'title',
+                    right: 'month,basicWeek,basicDay'
+                },
+                eventSources: allEvents,
+            // put your options and callbacks here
+                weekends: false,
+                dayClick: function (calEvent,jsEvent, view) {
+                    //alert(calEvent.title);
+                    //alert('a day has beeen clicked');                   
+                },
+                //wnen an event is clicked
+                eventClick: function (calEvent, jsEvent, view) {
+                    $("#title").text(calEvent.title);
+                    $("#description").text(calEvent.description);
+                    $("#date").text(moment(calEvent.start).format("dddd, MMMM Do YYYY - h:mm a"));
+                    $("#type").text(calEvent.type);               
+                    $("#exampleModal").modal();
+                    //alert('Event: ' + calEvent.title + calEvent.eventType);
+                    //alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);
+                    //alert('View: ' + view.name);
+
+                    // change the border color just for fun
+                    //$(this).css('border-color', 'red');
+
+                  }
+            })
+       });
+
+       function toggleWeekends() {
+           var weekends = $('#calendar').fullCalendar('option', 'weekends');
+            var text = 'Show Weekends';
+
+            if (weekends == false) {
+                text = 'Hide Weekends';
+              }
+
+            $('#calendar').fullCalendar('option', {
+                customButtons: {
+                    toggleWeekends: {
+                        text: text,
+                        click: function() {
+                            toggleWeekends();
+                        },
+                    },
+                },
+                weekends: !weekends,
+            });
+        }
+    </script>
+{% endblock %}

@@ -1,7 +1,15 @@
 ﻿{% load widget_tweaks %}
-
+<style>
+    .input-group-addon, .input-group-btn {
+        width:45px;
+    }
+    .input-group {
+        display: flex;
+    }
+</style>
 <form method="post" id="eventForm">
   {% csrf_token %}
+        {{ form.media }}
   <div class="modal-header">
     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
       <span aria-hidden="true">&times;</span>

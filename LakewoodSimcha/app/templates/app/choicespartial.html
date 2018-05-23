@@ -4,8 +4,18 @@
         <p>
             <div class="form-check">
                 {% for venue in extra_context.venues %}              
-                <input class="form-check-input" type="checkbox" value="" id="checkbox_{{ forloop.counter0 }}" checked>
-                <label class="form-check-label" for="">{{ venue }}</label><br />
+                    <input class="form-check-input" type="checkbox" value="" id="checkbox_{{ forloop.counter0 }}" checked>
+
+                    {% if title == "Book" %}
+                 
+                    <label class="form-check-label" for=""><a href="/venue/page/{{ venue.0 }}">{{ venue.1 }}</a></label><br />
+
+                    {% else %}
+
+                    <label class="form-check-label" for="">{{ venue }}</label><br />
+
+                    {% endif %}
+
                 {% endfor %}
               
             </div>

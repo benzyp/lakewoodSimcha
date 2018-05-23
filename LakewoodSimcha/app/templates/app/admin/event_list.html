@@ -1,0 +1,93 @@
+﻿
+{% extends "app/layout.html" %}
+
+{% block content %}
+
+
+<table class="table" id="event-table">
+  <thead>
+    <tr>
+      <th>#</th>
+      <th>Title</th>
+      <th>Name</th>
+      <th>Date/Time</th>
+      <th>Confirmed</th>
+      <th>Phone</th>
+      <th>Email</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% include 'app/admin/partial_event_list.html' %}
+  </tbody>
+</table>
+
+  <div class="modal fade" id="modal-event">
+    <div class="modal-dialog">
+      <div class="modal-content">
+      </div>
+    </div>
+  </div>
+<div id='calendar'></div>
+
+
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(function () {
+
+  /* Functions */
+
+  var loadForm = function () {
+    var btn = $(this);
+    $.ajax({
+      url: btn.attr("data-url"),
+      type: 'get',
+      dataType: 'json',
+      beforeSend: function () {
+        $("#modal-event").modal("show")
+      },
+      success: function (data) {
+        $("#modal-event .modal-content").html(data.html_form);
+      }
+    });
+  };
+
+  var saveForm = function () {
+    var form = $(this);
+    $.ajax({
+      url: form.attr("action"),
+      data: form.serialize(),
+      type: form.attr("method"),
+      dataType: 'json',
+      success: function (data) {
+        if (data.form_is_valid) {
+          $("#event-table tbody").html(data.html_event_list);
+          $("#modal-event").modal("hide");
+        }
+        else {
+          $("#modal-event .modal-content").html(data.html_form);
+        }
+      }
+    });
+    return false;
+  };
+
+
+  /* Binding */
+
+  // Update event
+  $("#event-table").on("click", ".js-update-event", loadForm);
+  $("#modal-event").on("submit", ".js-event-update-form", saveForm);
+
+    //Delete event
+  $("#event-table").on("click", ".js-delete-event", loadForm);
+  $("#modal-event").on("submit", ".js-event-delete-form", saveForm);
+});
+
+    //calendar
+
+</script>
+{% endblock %}
+

@@ -45,6 +45,7 @@
       </div>
       <div class="modal-body">
          <p id="title"/>
+         <p id="type"/>
          <p id="date"/>
          <p id="venue"/>
       </div>
@@ -195,7 +196,8 @@
                 eventClick: function (calEvent, jsEvent, view) {
                     $("#title").text(calEvent.title);
                     $("#date").text(moment(calEvent.start).format("dddd, MMMM Do YYYY - h:mm a"));
-                    $("#venue").text(calEvent.venue);
+                    $("#venue").text(calEvent.venue__name);
+                    $("#type").text(calEvent.type);
                     $("#eventDetailsModal").modal();
                     //alert('Event: ' + calEvent.title + calEvent.eventType);
                     //alert('Coordinates: ' + jsEvent.pageX + ',' + jsEvent.pageY);

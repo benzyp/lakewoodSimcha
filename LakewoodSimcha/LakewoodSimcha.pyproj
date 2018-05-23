@@ -36,6 +36,9 @@
     </Compile>
     <Compile Include="app\forms.py" />
     <Compile Include="app\models.py" />
+    <Compile Include="app\admin_views.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="app\tests.py" />
     <Compile Include="app\views.py" />
     <Compile Include="app\__init__.py" />
@@ -53,10 +56,12 @@
     <Folder Include="app\static\app\" />
     <Folder Include="app\static\app\content\" />
     <Folder Include="app\static\app\fonts\" />
+    <Folder Include="app\static\app\images\" />
     <Folder Include="app\static\app\scripts\" />
     <Folder Include="app\static\app\scripts\fullcalendar\" />
     <Folder Include="app\templates\" />
     <Folder Include="app\templates\app\" />
+    <Folder Include="app\templates\app\admin\" />
     <Folder Include="LakewoodSimcha\" />
   </ItemGroup>
   <ItemGroup>
@@ -64,6 +69,9 @@
     <Content Include="app\static\app\content\fullcalendar.min.css" />
     <Content Include="app\static\app\content\fullcalendar.print.css" />
     <Content Include="app\static\app\content\fullcalendar.print.min.css" />
+    <Content Include="app\static\app\images\1.jpg" />
+    <Content Include="app\static\app\images\3.jpg" />
+    <Content Include="app\static\app\images\6.jpg" />
     <Content Include="app\static\app\scripts\fullcalendar\fullcalendar.js" />
     <Content Include="app\static\app\scripts\fullcalendar\fullcalendar.min.js" />
     <Content Include="app\static\app\scripts\fullcalendar\gcal.js" />
@@ -71,7 +79,14 @@
     <Content Include="app\static\app\scripts\fullcalendar\moment.min.js" />
     <Content Include="app\templates\app\book.html" />
     <Content Include="app\templates\app\choicespartial.html" />
+    <Content Include="app\templates\app\admin\event_list.html" />
+    <Content Include="app\templates\app\help.html" />
     <Content Include="app\templates\app\partial_book_create.html" />
+    <Content Include="app\templates\app\admin\partial_event_delete.html" />
+    <Content Include="app\templates\app\admin\partial_event_form.html" />
+    <Content Include="app\templates\app\admin\partial_event_list.html" />
+    <Content Include="app\templates\app\admin\partial_event_update.html" />
+    <Content Include="app\templates\app\venue.html" />
     <Content Include="requirements.txt" />
     <Content Include="db.sqlite3" />
     <Content Include="app\static\app\content\bootstrap.css" />

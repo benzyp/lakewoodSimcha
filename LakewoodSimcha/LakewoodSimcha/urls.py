@@ -8,6 +8,7 @@ import django.contrib.auth.views
 
 import app.forms
 import app.views
+import app.admin_views
 
 # Uncomment the next lines to enable the admin:
 from django.conf.urls import include
@@ -19,6 +20,8 @@ urlpatterns = [
     url(r'^$', app.views.home, name='home'),
     url(r'^book/(?P<booking>[a-z]+)', app.views.book, name='book'),
     url(r'^verify/phone', app.views.verify_phone, name='verify_phone'),
+    url(r'^venue/page/(?P<pk>\d+)', app.views.venue_page, name='venue_page'),
+    url(r'^help', app.views.help, name='help'),
     url(r'^contact$', app.views.contact, name='contact'),
     url(r'^about', app.views.about, name='about'),
     url(r'^login/$',
@@ -45,4 +48,9 @@ urlpatterns = [
 
     # Uncomment the next line to enable the admin:
     url(r'^admin/', include(admin.site.urls)),
+
+    #admin_views
+    url(r'^events/(?P<pk>\d+)', app.admin_views.event_list, name='event_list'),
+    url(r'^event/(?P<pk>\d+)/delete/$', app.admin_views.event_delete, name='event_delete'),
+    url(r'^event/(?P<pk>\d+)/update/$', app.admin_views.event_update, name='event_update'),
 ]
