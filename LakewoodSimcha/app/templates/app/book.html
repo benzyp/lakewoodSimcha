@@ -105,6 +105,7 @@
 {% endblock %}
 {% block scripts %}
    <script>
+
        //create event submit
        var canEditPhone = "";
        $("#eventForm").submit(function(e) {
@@ -114,9 +115,27 @@
                 data:formData,
                 type: 'post',
                 dataType: 'json',
+                beforeSend: function () {
+                   $("#create_event").text('Please wait ...')
+                  .attr('disabled','disabled');
+                },
+
                 success: function (data) {
                     if (data.form_is_valid) {
-                      alert("Booking created!");  // <-- This is just a placeholder for now for testing
+                         var result = confirm( "Your booking has been created and the vendor notified." );
+                         if ( result ) {
+                             //update the events
+                             //'alert(data.updated_events);
+                             $('#calendar').eventSources = Object.values(data.updated_events);
+                             $('#calendar').fullCalendar( 'rerenderEvents' );
+                             //close the modal
+                             $("#bookEventModal .close").click();
+                             //reset the submit button
+                              $("#create_event").text('Submit').removeAttr('disabled');
+                        } else {
+                            //var x = 1;
+                            // the user clicked cancel or closed the confirm dialog.
+                        }
                     }
                     else {
                       $("#bookEventModal .modal-content").html(data.html_form);

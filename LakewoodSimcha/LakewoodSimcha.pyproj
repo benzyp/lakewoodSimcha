@@ -35,6 +35,15 @@
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="app\forms.py" />
+    <Compile Include="app\management\commands\cleanup.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="app\management\commands\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="app\management\__init__.py">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Include="app\models.py" />
     <Compile Include="app\admin_views.py">
       <SubType>Code</SubType>
@@ -51,7 +60,9 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="app\" />
+    <Folder Include="app\management\commands\" />
     <Folder Include="app\migrations\" />
+    <Folder Include="C:\Users\Benzy\source\repos\LakewoodSimcha\LakewoodSimcha\app\management\" />
     <Folder Include="app\static\" />
     <Folder Include="app\static\app\" />
     <Folder Include="app\static\app\content\" />

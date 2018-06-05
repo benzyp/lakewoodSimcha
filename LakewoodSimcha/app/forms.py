@@ -24,8 +24,9 @@ class EventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = ('start','event_type', 'title', 'venue', 'description')
+        dateTimeOptions = { 'showMeridian':True }
         widgets = {#Use localization and bootstrap 3
-            'start': DateTimeWidget(attrs={'id':"start"}, usel10n = True, bootstrap_version=3)            
+            'start': DateTimeWidget(attrs={'id':"start"}, usel10n = True, bootstrap_version=3, options=dateTimeOptions)            
         }
 
     def __init__(self, venue, *args, **kwargs):

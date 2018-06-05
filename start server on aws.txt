@@ -1,0 +1,5 @@
+source env/bin/activate
+cd LakewoodSimcha
+screen before running python ctrl-a then d to swap out command screen -r to access
+
+ python3.6 manage.py runserver 0.0.0.0:8000

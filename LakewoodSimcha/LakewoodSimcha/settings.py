@@ -119,7 +119,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'America/New_York'
 
 USE_I18N = True
 
@@ -136,9 +136,9 @@ STATIC_URL = '/static/'
 STATIC_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
 
 #EMAIL SETTINGS
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.mail.yahoo.com'
 EMAIL_PORT = 587
-EMAIL_HOST_USER = 'bzpern@gmail.com'
-EMAIL_HOST_PASSWORD = 'bp2212bp'
+EMAIL_HOST_USER = 'benzyp@yahoo.com'
+EMAIL_HOST_PASSWORD = 'Rachel123'
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

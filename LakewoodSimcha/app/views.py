@@ -15,6 +15,9 @@ from django.template.loader import render_to_string
 from django.http import JsonResponse
 from django.core.mail import send_mail
 from django.db.models import F
+from django.utils import timezone
+from django.conf import settings
+import pytz
 
 def home(request):
     """Renders the home page."""
@@ -23,14 +26,16 @@ def home(request):
     eventChoices = []
     eventColors = ('indigo', 'green', 'lightSkyBlue', 'plum')
     for eventType in Event.EVENT_TYPES:
-        #get all events for each event type
-        packages = Event.objects.filter(event_type = eventType[0]).filter(confirmed = True).all().values('id','title','start','description','venue__name')
+        #get all events for each event type later than today
+        today = timezone.now()
+        packages = Event.objects.filter(event_type = eventType[0]).filter(confirmed = True).filter(start__gte=today).all().values('id','title','start','description','venue__name')
         
         if packages.exists():
             eventChoices.append(eventType[1])
             eventGroup = []
             for package in packages:
                 package['color'] = [eventColors[eventType[0]-1]]
+                package['start'] = normalize(package['start'])#convert UTC time to eastern
                 #attributes can be added to the event - package['borderColor'] = 'red'
                 eventGroup.append(package)
             json_obj = dict(events = eventGroup)
@@ -62,9 +67,11 @@ def book(request, booking):
             customer = customerForm.save()
             event = form.save(commit = False)
             event.customer = customer
+            event.created = timezone.now()
             event.save()
             #contact venue with the event details
-            contact_venue(event, customer)
+            contact_venue_on_booking(event, customer)
+            contact_customer_on_booking(event, customer)
             data['form_is_valid'] = True
         else:
             data['form_is_valid'] = False
@@ -74,16 +81,19 @@ def book(request, booking):
 
     allEvents = []
     allVenues = []
+    #filter dates today or later
+    today = timezone.now()
     venues = Venue.objects.filter(venue_type =  Venue.VENUE_TYPE_MAP[booking])
     for currentVenue in venues:
         #get all events for each venue type
         #annotate will rename 'venue__color' to 'color
-        packages = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed'),type=F('event_type')).filter(venue = currentVenue.id).all().values('id','title','start','venue__name','venue__venue_type','type','color','editable')
+        packages = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed'),type=F('event_type')).filter(venue = currentVenue.id).filter(start__gte=today).all().values('id','title','start','venue__name','venue__venue_type','type','color','editable')
         if packages.exists():
             eventGroup = []
             for package in packages:
                 package['editable'] = not package['editable']#flip the value
-                package['type'] = Event.EVENT_TYPES[package['type']-1][1]#event type for details
+                package['type'] = Event.EVENT_TYPES[package['type']-1][1]#event type for details popup
+                package['start'] = normalize(package['start']) #convert UTC time to eastern
                 if package['editable'] == True:
                     package['borderColor'] = "red"
                     package['title'] = "Tentative"
@@ -114,34 +124,37 @@ def book(request, booking):
             context,
             request=request
         )
+        data['updated_events'] = json.dumps(allEvents, default=str)
         return JsonResponse(data)
 
-def create_event(request):
-    #creates the new event form
-    data = dict()
+#def create_event(request):
+#    #creates the new event form
+#    data = dict()
 
-    if request.method == 'POST':
+#    if request.method == 'POST':
 
-        form = EventForm(request.POST)
-        customerForm = CustomerForm(request.POST)
-        if all([form.is_valid(), customerForm.is_valid()]):
-            customer = customerForm.save()
-            event = form.save(commit = False)
-            event.customer = customer
-            event.save()
-            contact_venue(event, customer)
-            data['form_is_valid'] = True
-        else:
-            data['form_is_valid'] = False
-    else:
-        form = EventForm(Venue.VENUE_TYPE_MAP[booking])
-        customerForm = CustomerForm()
-    context = {'form': form, 'customerForm':customerForm}
-    data['html_form'] = render_to_string('app/partial_book_create.html',
-        context,
-        request=request
-    )
-    return JsonResponse(data)
+#        form = EventForm(request.POST)
+#        customerForm = CustomerForm(request.POST)
+#        if all([form.is_valid(), customerForm.is_valid()]):
+#            customer = customerForm.save()
+#            event = form.save(commit = False)
+#            event.customer = customer
+#            event.save()
+#            #contact_venue_on_booking(event, customer)
+#            venue = Venue.objectS.get(event.venue.id)
+#            contact_customer_on_booking(event, venue)
+#            data['form_is_valid'] = True
+#        else:
+#            data['form_is_valid'] = False
+#    else:
+#        form = EventForm(Venue.VENUE_TYPE_MAP[booking])
+#        customerForm = CustomerForm()
+#    context = {'form': form, 'customerForm':customerForm}
+#    data['html_form'] = render_to_string('app/partial_book_create.html',
+#        context,
+#        request=request
+#    )
+#    return JsonResponse(data)
 
 def get_venues(bookingType, allVenues):
     """Gets all the venues for the booking type so that they can be toggled on/off."""
@@ -152,16 +165,36 @@ def get_venues(bookingType, allVenues):
     if bookingType == 'restaurant':
         return {'display':'Restaurant','venues':allVenues }
 
-def contact_venue(event, customer):
+def contact_venue_on_booking(event, customer):
     """send an email to the venue"""
     d = dict(Event.EVENT_TYPES)
-    send_mail(
-        'A new booking at ' + event.venue.name,
-        customer.name + ' has booked a ' + d[event.event_type] + ' at ' + event.venue.name + ' on ' + event.start.strftime("%A, %d. %B %Y %I:%M%p"),
-        'benzyp@yahoo.com',
-        [customer.email],
-        fail_silently=False,
-    )
+    try:
+        send_mail(
+            event.title + ' booking at ' + event.venue.name,
+            customer.name + ' has tentatively booked a ' + d[event.event_type] + ' at ' + event.venue.name + ' on ' + event.start.strftime("%A, %d. %B %Y %I:%M%p") + '.\nPlease be in touch with ' + customer.name + ' via email: ' + customer.email + ' or phone: ' + customer.phone + '.',
+            'benzyp@yahoo.com',
+            [customer.email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        ex = e
+
+def contact_customer_on_booking(event, customer):
+    """send an email to the customer"""
+    d = dict(Event.EVENT_TYPES)
+    
+    try:
+        send_mail(
+            'Your tentative booking ' + event.title + ' was sent to ' + event.venue.name,
+            'Your booking on ' + event.start.strftime("%A, %d. %B %Y %I:%M%p") + ' has been sent to ' + event.venue.name + ' and will expire in ' + str(event.venue.duration)  + 
+            ' hours. \nPlease be in touch with ' + event.venue.name + ' via phone: ' + event.venue.phone + ' or email: ' + event.venue.email + ' to confirm and complete your booking.\n\n' +
+            'Thank you,\n\nLakewood Simcha',
+            'benzyp@yahoo.com',
+            [customer.email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        ex = e
 
 def contact_venue_with_edit(event, customer):
     """send an email to the venue"""
@@ -202,12 +235,14 @@ def contact(request):
 
 def venue_page(request, pk):
     venue = get_object_or_404(Venue, pk=pk)
-    events = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed'),type=F('event_type')).filter(venue = pk).all().values('id','title','start','venue__name','venue__venue_type','type','color','editable')
+    today = timezone.now()
+    events = Event.objects.annotate(color=F('venue__color'),editable=F('confirmed'),type=F('event_type')).filter(venue = pk).filter(start__gte=today).all().values('id','title','start','venue__name','venue__venue_type','type','color','editable')
     if events.exists():
         eventGroup = []
         for event in events:
             event['editable'] = not event['editable']#flip the value
             event['type'] = Event.EVENT_TYPES[event['type']-1][1]
+            event['start'] = normalize(event['start'])#convert UTC time to eastern
             if event['editable'] == True:
                 event['borderColor'] = "red"
                 event['title'] = "Tentative"
@@ -250,3 +285,8 @@ def about(request):
             'year':datetime.now().year,
         }
     )
+
+def normalize(to_convert):
+    """Converts UTC aware internal times to eastern."""
+    tz = pytz.timezone(settings.TIME_ZONE)
+    return tz.normalize(to_convert)
