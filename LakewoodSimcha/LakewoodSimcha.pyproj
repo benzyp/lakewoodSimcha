@@ -88,6 +88,7 @@
     <Content Include="app\static\app\scripts\fullcalendar\gcal.js" />
     <Content Include="app\static\app\scripts\fullcalendar\gcal.min.js" />
     <Content Include="app\static\app\scripts\fullcalendar\moment.min.js" />
+    <Content Include="app\templates\app\admin\partial_edit_event_date.html" />
     <Content Include="app\templates\app\book.html" />
     <Content Include="app\templates\app\choicespartial.html" />
     <Content Include="app\templates\app\admin\event_list.html" />

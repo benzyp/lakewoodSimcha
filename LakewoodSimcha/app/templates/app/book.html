@@ -8,9 +8,9 @@
     <p><a href="https://www.djangoproject.com/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div>-->
 
-<div class="row">
-    <div class="col-md-4">
-        <h5>Display {{ extra_context.display }}</h5>
+<!--<div class="row">
+    <div class="col-md-4">-->
+        <h5>Display {{ booking|capfirst }}</h5>
  {% include 'app/choicespartial.html' %}
 
       
@@ -22,14 +22,14 @@
         </p>
         <p><a class="btn btn-default" href="http://www.djangobook.com/en/2.0/index.html">Learn more &raquo;</a></p>
         <p><a class="btn btn-default" href="http://www.djangobook.com/en/2.0/index.html">Learn more &raquo;</a></p>-->
-    </div>
+<!--    </div>
     <div class="col-md-4">
         <p></p><p></p>
     </div>
     <div class="col-md-4">
         <p></p><p></p>
     </div>
-</div>
+</div>-->
 
 <div id='calendar'></div>
 
@@ -75,27 +75,20 @@
         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
         </button>
-        <h4 class="modal-title">Verify Phone</h4>
+        <h4 class="modal-title">Change the Date</h4>
         <h5>Please verify your phone number to edit the date.</h5>
       </div>
       <div class="modal-body">
             {% csrf_token %}
-          <div class="-group">
+          <div class="form-group">
                <label name="confirmEditMessage" id="confirmEditMessage" class=""></label>
           </div>
-          <div class="-group">
-            <label for="id_phone">Phone</label>
-            <input type="text" name="phone" maxlength="10" class="form-control" required id="id_phone" />
-          </div>
-          <div class="-group">
-            <label for="edit_event_start">Date</label>
-            <input type="text" name="edit_event_start" maxlength="19" class="form-control" required id="edit_event_start" />
-          </div>
+            {% include 'app/admin/partial_edit_event_date.html' %}
             <input type="hidden" name="edit_event_id" id="edit_event_id" value=""/>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-        <button type="submit" class="btn btn-primary">Verify Phone</button>
+        <button type="submit" class="btn btn-primary">Change Date</button>
       </div>
       </form>
     </div>
@@ -176,6 +169,7 @@
                 allEvents = Object.values({{ events }});
             {% endautoescape %}
             $('#calendar').fullCalendar({
+                fixedWeekCount: false,
                 //  put your options and callbacks here
                 customButtons: {
                     toggleWeekends: {
@@ -207,7 +201,7 @@
                         $("#confirmEditMessage").text("");
                          $(".redFont").css('color','black');;
                         $("#edit_event_id").attr('value', event.id);
-                        $("#edit_event_start").attr('value',moment(event.end).format('YYYY-MM-DD HH:MM:ss'));
+                        $("#id_edit_event_start").attr('value',moment(event.start).format('YYYY-MM-DD hh:mm:ss a'));
                         $("#confirmEditModal").modal();
                     }
                 },

@@ -7,7 +7,7 @@ from django.http import HttpRequest
 from django.template import RequestContext
 from datetime import datetime
 from app.models import Event, Customer, Venue
-from app.forms import EventForm, CustomerForm
+from app.forms import EditDateForm, EventForm, CustomerForm
 from django.core.serializers import serialize
 from array import array
 import json
@@ -24,6 +24,7 @@ def home(request):
     #assert isinstance(request, HttpRequest)
     allEvents = []
     eventChoices = []
+    allColors = []
     eventColors = ('indigo', 'green', 'lightSkyBlue', 'plum')
     for eventType in Event.EVENT_TYPES:
         #get all events for each event type later than today
@@ -32,6 +33,7 @@ def home(request):
         
         if packages.exists():
             eventChoices.append(eventType[1])
+            allColors.append(eventColors[eventType[0]-1])
             eventGroup = []
             for package in packages:
                 package['color'] = [eventColors[eventType[0]-1]]
@@ -40,7 +42,7 @@ def home(request):
                 eventGroup.append(package)
             json_obj = dict(events = eventGroup)
             allEvents.append(json_obj)
-
+    zipData = zip(eventChoices, allColors)#zip the event types and colors together for template
     return render(
         request,
         'app/index.html',
@@ -48,7 +50,7 @@ def home(request):
             'title':'Home Page',
             'year':datetime.now().year,
             'events':json.dumps(allEvents,default=str),
-            'extra_context': {'venues':eventChoices }
+            'extra_context': zipData
             #,'events':serialize('json',event_list,fields=('id','title','startTime','color'))
         }
     )
@@ -70,7 +72,7 @@ def book(request, booking):
             event.created = timezone.now()
             event.save()
             #contact venue with the event details
-            contact_venue_on_booking(event, customer)
+            contact_venue_on_booking(event, customer, request)
             contact_customer_on_booking(event, customer)
             data['form_is_valid'] = True
         else:
@@ -81,6 +83,7 @@ def book(request, booking):
 
     allEvents = []
     allVenues = []
+    allColors = []
     #filter dates today or later
     today = timezone.now()
     venues = Venue.objects.filter(venue_type =  Venue.VENUE_TYPE_MAP[booking])
@@ -101,9 +104,10 @@ def book(request, booking):
                 #store list of all distinct venues for choicespartial
                 if (currentVenue.id,package['venue__name']) not in allVenues:
                     allVenues.append((currentVenue.id,package['venue__name']))
+                    allColors.append(currentVenue.color)
             json_obj = dict(events = eventGroup)
             allEvents.append(json_obj)
-
+    zipData = zip( allVenues, allColors)#zip the event types and colors together for template
     if request.method == 'GET':
         return render(
             request,
@@ -111,11 +115,12 @@ def book(request, booking):
             {
                 'form':EventForm(venue = Venue.VENUE_TYPE_MAP[booking]),
                 'customerForm':CustomerForm(),
+                'editDateForm':EditDateForm(),
                 'events':json.dumps(allEvents,default=str),
                 'title':'Book',
                 'year':datetime.now().year,
                 'booking': bookingType,
-                'extra_context': get_venues(bookingType, allVenues)
+                'extra_context': zipData
             }
         )
     elif request.method == 'POST':
@@ -156,22 +161,14 @@ def book(request, booking):
 #    )
 #    return JsonResponse(data)
 
-def get_venues(bookingType, allVenues):
-    """Gets all the venues for the booking type so that they can be toggled on/off."""
-    if bookingType == 'wedding':
-        return {'display':'Wedding','venues':allVenues }
-    if bookingType == 'hall':
-        return {'display':'Hall','venues':allVenues }
-    if bookingType == 'restaurant':
-        return {'display':'Restaurant','venues':allVenues }
-
-def contact_venue_on_booking(event, customer):
+def contact_venue_on_booking(event, customer, request):
     """send an email to the venue"""
     d = dict(Event.EVENT_TYPES)
     try:
         send_mail(
             event.title + ' booking at ' + event.venue.name,
-            customer.name + ' has tentatively booked a ' + d[event.event_type] + ' at ' + event.venue.name + ' on ' + event.start.strftime("%A, %d. %B %Y %I:%M%p") + '.\nPlease be in touch with ' + customer.name + ' via email: ' + customer.email + ' or phone: ' + customer.phone + '.',
+            customer.name + ' has tentatively booked a ' + d[event.event_type] + ' at ' + event.venue.name + ' on ' + event.start.strftime("%A, %d. %B %Y %I:%M%p") + '.\nPlease be in touch with ' + customer.name + ' via email: ' + customer.email + ' or phone: ' + customer.phone + '.' +
+            '\nTo confirm this booking please use the following link ' + request.build_absolute_uri("/") + 'events/' + str(event.venue.id),
             'benzyp@yahoo.com',
             [customer.email],
             fail_silently=False,
@@ -196,12 +193,13 @@ def contact_customer_on_booking(event, customer):
     except Exception as e:
         ex = e
 
-def contact_venue_with_edit(event, customer):
+def contact_venue_with_edit(event, customer, request):
     """send an email to the venue"""
     d = dict(Event.EVENT_TYPES)
     send_mail(
         'Event date has been changed',
-        customer.name + ' has change the ' + event.title + ' event to a new date. ' + event.start,
+        customer.name + ' has change the ' + event.title + ' event to a new date. ' + event.start.strftime("%A, %d %B %Y %I:%M%p") + '.\nPlease be in touch with ' + customer.name + ' via email: ' + customer.email + ' or phone: ' + customer.phone + '.' +
+        '\nTo confirm this booking please use the following link ' + request.build_absolute_uri("/") + 'events/' + str(event.venue.id),
         'benzyp@yahoo.com',
         [customer.email],
         fail_silently=False,
@@ -210,13 +208,14 @@ def contact_venue_with_edit(event, customer):
 def verify_phone(request):
     event_id = request.POST.get('edit_event_id')
     phone = request.POST.get('phone')
-    event_edit_start = request.POST.get('edit_event_start')
+    event_edit_start = localize(request.POST.get('edit_event_start'))
     event = Event.objects.get(id=event_id)
     valid = False
     if phone == event.customer.phone: 
         event.start = event_edit_start
+        event.created = timezone.now()
         event.save()
-        contact_venue_with_edit(event, event.customer)
+        contact_venue_with_edit(event, event.customer, request)
         valid = True
     return JsonResponse(valid, safe=False)
     
@@ -290,3 +289,8 @@ def normalize(to_convert):
     """Converts UTC aware internal times to eastern."""
     tz = pytz.timezone(settings.TIME_ZONE)
     return tz.normalize(to_convert)
+
+def localize(to_convert):
+    """Converts naive datetime to localize."""
+    tz = pytz.timezone(settings.TIME_ZONE)
+    return tz.localize(datetime.strptime(to_convert, '%Y-%m-%d %I:%M:%S %p'))

@@ -8,12 +8,12 @@
     <p><a href="https://www.djangoproject.com/" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
 </div>-->
 
-<div class="row">
-    <div class="col-md-4">
+<!--<div class="row">
+    <div class="col-md-4">-->
         <h4>View Event Type</h4>
-        <p>
+        
              {% include 'app/choicespartial.html' %}
-        </p>
+        
         <!--<h2>Getting started</h2>
         <p>
             Django gives you a powerful, patterns-based way to build dynamic websites that
@@ -22,14 +22,14 @@
         </p>
         <p><a class="btn btn-default" href="http://www.djangobook.com/en/2.0/index.html">Learn more &raquo;</a></p>
         <p><a class="btn btn-default" href="http://www.djangobook.com/en/2.0/index.html">Learn more &raquo;</a></p>-->
-    </div>
+    <!--/div>
     <div class="col-md-4">
         <p></p><p></p>
     </div>
     <div class="col-md-4">
         <p></p><p></p>
     </div>
-</div>
+</div>-->
 
 <div id='calendar'></div>
 
@@ -68,6 +68,7 @@
        {% endautoescape %}
        //alert(allEvents[0]);
            $('#calendar').fullCalendar({
+                fixedWeekCount: false,
                 customButtons: {
                     toggleWeekends: {
                         text: 'Show Weekends',

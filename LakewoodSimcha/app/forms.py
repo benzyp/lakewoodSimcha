@@ -43,6 +43,16 @@ class AdminEventForm(forms.ModelForm):
     class Meta:
         model = Event
         fields = ('start','confirmed','venue')
-        widgets = {'venue': forms.HiddenInput(),'start':DateTimeWidget(attrs={'id':"start"},usel10n = True, bootstrap_version=3)}
+        dateTimeOptions = { 'showMeridian':True }
+        widgets = {'venue': forms.HiddenInput(),'start':DateTimeWidget(attrs={'id':"start"},usel10n = True, bootstrap_version=3, options=dateTimeOptions)}
         labels = {'venue':_('')}
+
+class EditDateForm(forms.Form):
+    phone = forms.CharField(max_length=10)
+    edit_event_start = forms.DateTimeField(label = 'New Date')
+    dateTimeOptions = { 'showMeridian':True }
+    widgets = {#Use localization and bootstrap 3
+        'edit_event_start': DateTimeWidget(attrs={'id':"edit_event_start"}, usel10n = True, bootstrap_version=3, options=dateTimeOptions)            
+    }
+
 

@@ -51,6 +51,7 @@ $("#toggle").on("click", function(){
        {% endautoescape %}
        //alert(allEvents[0]);
            $('#calendar').fullCalendar({
+                fixedWeekCount: false,
                 customButtons: {
                     toggleWeekends: {
                         text: 'Show Weekends',
