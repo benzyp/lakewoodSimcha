@@ -27,8 +27,9 @@ def home(request):
     allColors = []
     eventColors = ('indigo', 'green', 'lightSkyBlue', 'plum')
     for eventType in Event.EVENT_TYPES:
-        #get all events for each event type later than today
+
         today = timezone.now()
+        #get all events later than today grouped by the event type
         packages = Event.objects.filter(event_type = eventType[0]).filter(confirmed = True).filter(start__gte=today).all().values('id','title','start','description','venue__name')
         
         if packages.exists():
@@ -218,7 +219,7 @@ def verify_phone(request):
         contact_venue_with_edit(event, event.customer, request)
         valid = True
     return JsonResponse(valid, safe=False)
-    
+
 def contact(request):
     """Renders the contact page."""
     assert isinstance(request, HttpRequest)

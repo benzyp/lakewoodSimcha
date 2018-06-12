@@ -201,7 +201,7 @@
                         $("#confirmEditMessage").text("");
                          $(".redFont").css('color','black');;
                         $("#edit_event_id").attr('value', event.id);
-                        $("#id_edit_event_start").attr('value',moment(event.start).format('YYYY-MM-DD hh:mm:ss a'));
+                        $('input[name="edit_event_start"]').val(moment(event.start).format('YYYY-MM-DD hh:mm:ss a'))
                         $("#confirmEditModal").modal();
                     }
                 },

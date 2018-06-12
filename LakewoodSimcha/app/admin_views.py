@@ -23,6 +23,8 @@ def event_delete(request, pk):
     event = get_object_or_404(Event, pk=pk)
     data = dict()
     if request.method == 'POST':
+        if event.confirmed == 0:
+            email_deleted_event(pk)
         event.customer.delete()
         event.delete()
         data['form_is_valid'] = True  # This is just to play along with the existing code
@@ -46,14 +48,19 @@ def event_update(request, pk):
     else:
         #form = EventForm(event.event_type, instance=event)
         form = AdminEventForm(instance=event)
-    return save_event_form(request, form, 'app/admin/partial_event_update.html')
+    return save_event_form(request, form, 'app/admin/partial_event_update.html',pk)
 
-def save_event_form(request, form, template_name):
+def save_event_form(request, form, template_name, pk):
     data = dict()
     if request.method == 'POST':
         if form.is_valid():
+            #Leaving this for now as a manual process - venue must delete existing bookings ot let the job expire them
+            ##if booking is confirmed, delete all other pending bookings with notifications
+            #if form.cleaned_data['confirmed']:
+            #    confirm_booking(pk)
             form.save()
             data['form_is_valid'] = True
+            #retrieve events for refresh of events list
             events = Event.objects.filter(venue = request.POST['venue'])
             data['html_event_list'] = render_to_string('app/admin/partial_event_list.html', {
                 'events': events
@@ -72,5 +79,31 @@ def event_list(request, pk):
     events = Event.objects.filter(venue__id = pk)
     return render(request, 'app/admin/event_list.html', {'events': events, 'year':datetime.now().year,'allEvents':json.dumps(events,default=str)})
 
+def email_deleted_event(pk):
+    """send an email to customer with an unconfirmed booking that's being deleted."""
+    event = Event.objects.get(id=pk)
+    try:
+        send_mail(
+            event.title + ' booking at ' + event.venue.name + ' has been deleted.',
+            event.start.strftime("%A, %d. %B %Y %I:%M%p") + ' at ' + event.venue.name + ' has been booked.\n\nPlease book a new date at ' + event.venue.name,
+            'benzyp@yahoo.com',
+            [event.customer.email],
+            fail_silently=False,
+        )
+    except Exception as e:
+        ex = e
+
+#def confirm_booking(pk):
+#    event = Event.objects.filter(id=pk).get()
+#    #get any other tentative bookings for the same date/venue
+#    tentativeEvents = Event.objects.filter(venue__id = event.venue.id).filter(start__gte=event.start.date()).filter(confirmed=0)..all()
+#    #for BF and LT allow for double booking on Sunday
+#    if event.StopAsyncIteration.weekday() == 6:
+#        if event.venue.id == 3:
+#            return
+#    foreach event in tentativeEvents:
+        
+#        email_customer()
+#        delete
 #def upload_events
     
