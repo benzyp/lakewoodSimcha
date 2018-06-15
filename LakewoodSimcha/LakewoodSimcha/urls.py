@@ -53,4 +53,5 @@ urlpatterns = [
     url(r'^events/(?P<pk>\d+)', app.admin_views.event_list, name='event_list'),
     url(r'^event/(?P<pk>\d+)/delete/$', app.admin_views.event_delete, name='event_delete'),
     url(r'^event/(?P<pk>\d+)/update/$', app.admin_views.event_update, name='event_update'),
+    url(r'^upload/events$', app.admin_views.upload_events, name='upload_events'),
 ]

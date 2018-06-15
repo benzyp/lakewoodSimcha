@@ -294,4 +294,4 @@ def normalize(to_convert):
 def localize(to_convert):
     """Converts naive datetime to localize."""
     tz = pytz.timezone(settings.TIME_ZONE)
-    return tz.localize(datetime.strptime(to_convert, '%Y-%m-%d %I:%M:%S %p'))
+    return tz.localize(datetime.strptime(to_convert, '%Y-%m-%d %I:%M:%S %p'))#works on string converting to datetime first

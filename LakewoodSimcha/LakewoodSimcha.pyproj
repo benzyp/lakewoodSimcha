@@ -62,6 +62,7 @@
     <Folder Include="app\" />
     <Folder Include="app\management\commands\" />
     <Folder Include="app\migrations\" />
+    <Folder Include="app\common\" />
     <Folder Include="C:\Users\Benzy\source\repos\LakewoodSimcha\LakewoodSimcha\app\management\" />
     <Folder Include="app\static\" />
     <Folder Include="app\static\app\" />

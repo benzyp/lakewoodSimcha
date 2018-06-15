@@ -132,8 +132,10 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
 
 STATIC_URL = '/static/'
-
 STATIC_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['static']))
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = posixpath.join(*(BASE_DIR.split(os.path.sep) + ['media']))
 
 #EMAIL SETTINGS
 EMAIL_HOST = 'smtp.mail.yahoo.com'
@@ -142,3 +144,4 @@ EMAIL_HOST_USER = 'benzyp@yahoo.com'
 EMAIL_HOST_PASSWORD = 'Rachel123'
 EMAIL_USE_TLS = True
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+

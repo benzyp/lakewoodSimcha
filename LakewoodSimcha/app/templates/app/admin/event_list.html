@@ -21,6 +21,26 @@
   </tbody>
 </table>
 
+<hr />
+<h3>Upload Events</h3>
+     <form method="post" id="uploadNewEvents" action="/upload/events" enctype="multipart/form-data">    
+  {% csrf_token %}
+{% load widget_tweaks %}
+
+{% for field in uploadForm %}
+  <div class="form-group{% if field.errors %} has-error{% endif %}">
+    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+    {% render_field field class="form-control" %}
+    {% for error in field.errors %}
+      <p class="help-block">{{ error }}</p>
+    {% endfor %}
+  </div>
+{% endfor %}
+        <button type="submit" class="btn btn-primary">Upload Events</button>
+
+      </form>
+
+
   <div class="modal fade" id="modal-event">
     <div class="modal-dialog">
       <div class="modal-content">

@@ -52,4 +52,6 @@ class EditDateForm(forms.Form):
     dateTimeOptions = { 'showMeridian':True } 
     edit_event_start = forms.DateTimeField(label = 'New Date', widget=DateTimeWidget(attrs={'id':"start"},usel10n = True, bootstrap_version=3, options=dateTimeOptions))
 
-
+class UploadFileForm(forms.Form):
+    venue = forms.IntegerField(widget = forms.HiddenInput(), label = '')
+    file = forms.FileField()
