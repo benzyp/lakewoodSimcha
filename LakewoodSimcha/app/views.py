@@ -169,7 +169,7 @@ def contact_venue_on_booking(event, customer, request):
         send_mail(
             event.title + ' booking at ' + event.venue.name,
             customer.name + ' has tentatively booked a ' + d[event.event_type] + ' at ' + event.venue.name + ' on ' + event.start.strftime("%A, %d. %B %Y %I:%M%p") + '.\nPlease be in touch with ' + customer.name + ' via email: ' + customer.email + ' or phone: ' + customer.phone + '.' +
-            '\nTo confirm this booking please use the following link ' + request.build_absolute_uri("/") + 'events/' + str(event.venue.id),
+            '\nTo confirm this booking please use the following link ' + request.build_absolute_uri("/") + 'events/',
             'benzyp@yahoo.com',
             [customer.email],
             fail_silently=False,
@@ -199,8 +199,8 @@ def contact_venue_with_edit(event, customer, request):
     d = dict(Event.EVENT_TYPES)
     send_mail(
         'Event date has been changed',
-        customer.name + ' has change the ' + event.title + ' event to a new date. ' + event.start.strftime("%A, %d %B %Y %I:%M%p") + '.\nPlease be in touch with ' + customer.name + ' via email: ' + customer.email + ' or phone: ' + customer.phone + '.' +
-        '\nTo confirm this booking please use the following link ' + request.build_absolute_uri("/") + 'events/' + str(event.venue.id),
+        customer.name + ' has changed the ' + event.title + ' event to a new date ' + event.start.strftime("%A, %d %B %Y %I:%M%p") + ' at ' +  event.venue.name + '.' + '\nPlease be in touch with ' + customer.name + ' via email: ' + customer.email + ' or phone: ' + customer.phone + '.' +
+        '\nTo confirm this booking please use the following link ' + request.build_absolute_uri("/") + 'events/',
         'benzyp@yahoo.com',
         [customer.email],
         fail_silently=False,

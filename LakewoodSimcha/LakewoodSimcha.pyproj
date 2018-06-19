@@ -60,6 +60,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="app\" />
+    <Folder Include="app\management\" />
     <Folder Include="app\management\commands\" />
     <Folder Include="app\migrations\" />
     <Folder Include="app\common\" />

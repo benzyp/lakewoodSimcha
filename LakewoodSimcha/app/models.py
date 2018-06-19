@@ -61,7 +61,7 @@ def create_or_update_user_profile(sender, instance, created, **kwargs):
 
 class Customer(models.Model):
     name = models.CharField(max_length=100)
-    email = models.EmailField()
+    email = models.EmailField(null=True)
     phone = models.CharField(max_length=10,blank=False)
 
 class Event(models.Model):

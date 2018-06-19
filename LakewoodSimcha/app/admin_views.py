@@ -24,6 +24,7 @@ from openpyxl import load_workbook
 from django.utils import timezone
 from django.views.decorators.http import require_http_methods
 import pytz
+from django.core.exceptions import ObjectDoesNotExist
 
 
 def event_delete(request, pk):
@@ -80,12 +81,16 @@ def save_event_form(request, form, template_name, pk):
     return JsonResponse(data)
 
 @login_required(login_url='/login/')
-def event_list(request, pk):
+def event_list(request):
     #verify user id
-    if not request.user.venue.id == int(pk):
+    try:
+        if request.user.venue is None:
+            return redirect('/login/?next=%s' % request.path)
+    except ObjectDoesNotExist:
         return redirect('/login/?next=%s' % request.path)
-    events = Event.objects.filter(venue__id = pk).filter(start__gte=timezone.now()).all()
-    uploadForm = UploadFileForm(initial={'venue':pk})
+        
+    events = Event.objects.filter(venue__id = request.user.venue.id).filter(start__gte=timezone.now()).all()
+    uploadForm = UploadFileForm(initial={'venue':request.user.venue.id})
     return render(request, 'app/admin/event_list.html', {'events': events, 'year':datetime.now().year,'uploadForm':uploadForm})
 
 def email_deleted_event(pk):
@@ -94,7 +99,7 @@ def email_deleted_event(pk):
     try:
         send_mail(
             event.title + ' booking at ' + event.venue.name + ' has been deleted.',
-            event.start.strftime("%A, %d. %B %Y %I:%M%p") + ' at ' + event.venue.name + ' has been deleted.\n\nPlease book a new date at ' + event.venue.name,
+            'Your booking for ' + normalize(event.start).strftime("%A, %d %B %Y %I:%M%p") + ' at ' + event.venue.name + ' has been deleted.\n\nPlease book a new date at ' + event.venue.name,
             'benzyp@yahoo.com',
             [event.customer.email],
             fail_silently=False,
@@ -118,7 +123,7 @@ def upload_events(request):
         event_type_to_index.update({j[1]:i})
     for row in ws.iter_rows(row_offset=1):#process the events
         event = Event(title=row[0].value,event_type=(event_type_to_index[row[1].value]+1),description=row[2].value,confirmed=(1 if row[3].value == 'Y' else 0),start=localize(row[4].value),venue_id=venue,created=timezone.now())
-        if row[3].value == 'N':#only save customer info for Tentative bookings - this may change
+        if row[5].value is not None and row[7] is not None:#only save customer info for Tentative bookings - this may change
             customer = Customer(name=row[5].value,email=row[6].value,phone=row[7].value)
             customer.save()
             event.customer = customer
@@ -134,6 +139,11 @@ def localize(to_convert):
     """Converts naive datetime to localize."""
     tz = pytz.timezone(settings.TIME_ZONE)
     return tz.localize(to_convert)#works on excel value which comes in as dattime
+
+def normalize(to_convert):
+    """Converts UTC aware internal times to eastern."""
+    tz = pytz.timezone(settings.TIME_ZONE)
+    return tz.normalize(to_convert)
 
 #def confirm_booking(pk):
 #    event = Event.objects.filter(id=pk).get()
